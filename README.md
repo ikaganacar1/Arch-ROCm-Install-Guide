@@ -1,92 +1,215 @@
-﻿Arch ROCm Guide
-Verified working On my RX 6700 XT
+# Arch ROCm Installation Guide (with PyEnv & Conda Options)
 
-1. Update your system with the bellow command: 
+This guide provides instructions for installing ROCm on Arch-based systems, offering options for managing Python environments with both **PyEnv** and **Conda**.
 
-sudo pacman -Syu
+**Verified working On my RX 6700 XT (pyenv) RX 580 (conda)**
 
-2. Install a AUR helper of your choice, here we are using yay. Install it with the below command:
+---
 
-sudo pacman -S --needed git base-devel && git clone https://aur.archlinux.org/yay.git && cd yay && makepkg -si
+## System Preparation
 
-3. Install prerequisites with the bellow command:
+1.  **Update your system:**
 
-yay -S wget make curl gperftools
+    ```bash
+    sudo pacman -Syu
+    ```
 
-4. Install PyEnv with the bellow command:
+2.  **Install an AUR helper (yay recommended):**
 
-curl https://pyenv.run | bash
+    ```bash
+    sudo pacman -S --needed git base-devel && git clone [https://aur.archlinux.org/yay.git](https://aur.archlinux.org/yay.git) && cd yay && makepkg -si
+    ```
 
-5. After installing PyEnv add these lines to your .bashrc:
+3.  **Install prerequisites:**
 
-nano ~/.bashrc
+    ```bash
+    yay -S wget make curl gperftools
+    ```
 
-6. Add these lines at the bottom of your .bashrc:
+---
 
-export PATH="$HOME/.pyenv/bin:$PATH"
-eval "$(pyenv init --path)"
-eval "$(pyenv virtualenv-init -)"
+## Python Environment Setup (Choose One: PyEnv or Conda)
 
-Ctrl+O then press ENTER to save changes.
-Ctrl+X to exit after saving changes.
+### Option 1: PyEnv (Recommended for isolated Python versions)
 
-7. Then refresh your shell using the bellow command:
+4.  **Install PyEnv:**
 
-exec $SHELL
+    ```bash
+    curl [https://pyenv.run](https://pyenv.run) | bash
+    ```
 
-8. Next make sure pyenv is installed by running the bellow command:
+5.  **Add PyEnv to your shell configuration (.bashrc):**
 
-pyenv
+    ```bash
+    nano ~/.bashrc
+    ```
 
-If it prints a list of commands it is installed and working properly:
+    Add these lines to the bottom of the file:
 
-9. Install Python 3.10.13 with the bellow command:
+    ```bash
+    export PATH="$HOME/.pyenv/bin:$PATH"
+    eval "$(pyenv init --path)"
+    eval "$(pyenv virtualenv-init -)"
+    ```
 
-pyenv install 3.10.13
+    * Press `Ctrl+O` then `ENTER` to save changes.
+    * Press `Ctrl+X` to exit.
 
-10. Next we need to tell the system to use this version of python with the bellow command:
+6.  **Refresh your shell:**
 
-pyenv global 3.10.13
+    ```bash
+    exec $SHELL
+    ```
 
-11. To ensure we have the correct python version in use run this command:
+7.  **Verify PyEnv installation:**
 
-python --version
+    ```bash
+    pyenv
+    ```
 
-This command should return version 3.10.13.
+    If it prints a list of commands, it's installed correctly.
 
-Install ROCm:
+8.  **Install Python 3.10.13:**
 
-yay -S rocm-hip-sdk rocm-opencl-sdk
+    ```bash
+    pyenv install 3.10.13
+    ```
 
-12. Next add yourself to these groups and replace username with your own username:
+9.  **Set global Python version:**
 
-sudo gpasswd -a username render
-sudo gpasswd -a username video
+    ```bash
+    pyenv global 3.10.13
+    ```
 
-If your unsure what your username is, run this in the terminal to find out:
+10. **Confirm Python version:**
 
-whoami
+    ```bash
+    python --version
+    ```
 
-13. Then add these lines to your .bashrc:
+    This command should return `Python 3.10.13`.
 
-nano ~/.bashrc
+### Option 2: Conda (Recommended for complex data science environments)
 
-Add these lines at the bottom of your file, if you have a RX 7000 series card, change 10.3.0 to 11.0.0:
+4.  **Install Miniconda (or Anaconda if preferred):**
 
-export ROCM_PATH=/opt/rocm
-export HSA_OVERRIDE_GFX_VERSION=10.3.0
+    ```bash
+    mkdir -p ~/miniconda3
+    wget [https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh](https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh) -O ~/miniconda3/miniconda.sh
+    bash ~/miniconda3/miniconda.sh -b -p ~/miniconda3
+    rm ~/miniconda3/miniconda.sh
+    ```
 
-Ctrl+O then press ENTER to save changes.
-Ctrl+X to exit after saving changes.
+5.  **Initialize Conda and add to your shell configuration (.bashrc):**
 
-14. Reboot your system either though the GUI or by running this command in your terminal:
+    ```bash
+    ~/miniconda3/bin/conda init bash
+    nano ~/.bashrc
+    ```
 
-sudo reboot
+    Ensure that the `conda initialize` block has been added to the end of your `.bashrc` file. If not, you might need to manually add it or re-run `~/miniconda3/bin/conda init bash`.
 
-15. Lastly after reboot, check if ROCm is installed by running this command:
+    * Press `Ctrl+O` then `ENTER` to save changes.
+    * Press `Ctrl+X` to exit.
 
-rocminfo
+6.  **Refresh your shell:**
 
-If it returns a wall of info and specs about your GPU, it is installed and working correctly.
+    ```bash
+    exec $SHELL
+    ```
 
-If all went well, then congrats you have successfully installed ROCm on your AMD GPU.
+7.  **Verify Conda installation:**
+
+    ```bash
+    conda --version
+    ```
+
+    This should display the Conda version.
+
+8.  **Create and activate a new Conda environment for ROCm:**
+
+    ```bash
+    conda create -n rocm_env python=3.10.13 -y
+    conda activate rocm_env
+    ```
+
+9.  **Confirm Python version within the Conda environment:**
+
+    ```bash
+    python --version
+    ```
+
+    This command should return `Python 3.10.13`. To deactivate the environment later, use `conda deactivate`.
+
+---
+
+## ROCm Installation
+
+11. **Install ROCm SDKs:**
+
+    ```bash
+    yay -S rocm-hip-sdk rocm-opencl-sdk
+    ```
+
+12. **Add yourself to ROCm groups:**
+
+    Replace `username` with your actual username. If unsure, run `whoami`.
+
+    ```bash
+    sudo gpasswd -a username render
+    sudo gpasswd -a username video
+    ```
+
+13. **Add ROCm environment variables to your .bashrc:**
+
+    ```bash
+    nano ~/.bashrc
+    ```
+
+    Add these lines to the bottom of your file. If you have an **RX 7000 series card, change `10.3.0` to `11.0.0`**.
+
+    ```bash
+    export ROCM_PATH=/opt/rocm
+    export HSA_OVERRIDE_GFX_VERSION=10.3.0
+    ```
+
+    * Press `Ctrl+O` then `ENTER` to save changes.
+    * Press `Ctrl+X` to exit.
+
+---
+
+## Final Steps
+
+14. **Reboot your system:**
+
+    ```bash
+    sudo reboot
+    ```
+
+15. **Verify ROCm installation after reboot:**
+
+    ```bash
+    rocminfo
+    ```
+
+    If it returns a wall of information and specs about your GPU, ROCm is installed and working correctly! 🎉
+
+Congratulations! You've successfully installed ROCm on your AMD GPU.
+
+---
+
+## Extra Tips
+1. For old devices like RX 580 you should install last known supported versions of ROCm and Torch for example i installed ROCm 5.4.2 and Torch 2.0.1
+  * `pip install torch==2.0.1+rocm5.4.2 torchvision==0.15.2+rocm5.4.2 \
+  --index-url https://download.pytorch.org/whl/rocm5.4.2`
+2. `ImportError: libhiprtc.so` [this can be changed]: cannot enable executable stack as shared object requires: Invalid argument
+   * `sudo pacman -S patchelf`
+   * `find ~/.conda/envs/py311 -name libhiprtc.so`
+   * `sudo patchelf --clear-execstack ~/.conda/envs/py311/lib/python3.11/site-packages/torch/lib/libhiprtc.so`
+3. To test everything works `python -c "import torch; print(torch.version.hip, torch.cuda.is_available(), torch.cuda.get_device_name(0))"`
+
+
+
+
+
+
